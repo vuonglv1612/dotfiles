@@ -1,17 +1,23 @@
 syntax on
-call plug#begin(stdpath('data') . '/plugged')
-
-Plug 'davidhalter/jedi-vim'   " jedi for python
-Plug 'roxma/nvim-yarp'  " dependency of ncm2
-Plug 'ncm2/ncm2'  " awesome autocomplete plugin
-Plug 'HansPinckaers/ncm2-jedi'  " fast python completion (use ncm2 if you want type info or snippet support)
-Plug 'ncm2/ncm2-bufword'  " buffer keyword completion
-Plug 'ncm2/ncm2-path'  " filepath completion
-Plug 'junegunn/seoul256.vim' " colortheme seoul256
-Plug 'morhetz/gruvbox' " colortheme gruvbox
+set termguicolors
+set t_Co=256
+set colorcolumn=79
+" call plug#begin(stdpath('data') . '/plugged')
+call plug#begin('~/.vim/plugged')
 Plug 'itchyny/lightline.vim' " statusline
 Plug 'itchyny/vim-gitbranch' " branch name for status line
+Plug 'raimondi/delimitmate'
+Plug 'flrnprz/candid.vim' " theme candid
+Plug 'connorholyday/vim-snazzy'
+Plug 'sonph/onehalf', {'rtp': 'vim/'}
 
+" Use release branch (Recommend)
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+" Or latest tag
+Plug 'neoclide/coc.nvim', {'tag': '*', 'branch': 'release'}
+" Or build from source code by use yarn: https://yarnpkg.com
+Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 call plug#end()
 
 " path to your python 
@@ -35,7 +41,6 @@ set noswapfile  " swap files give annoying warning
 set breakindent  " preserve horizontal whitespace when wrapping
 set showbreak=..
 set lbr  " wrap words
-set nowrap  " i turn on wrap manually when needed
 
 set scrolloff=3 " keep three lines between the cursor and the edge of the screen
 set undodir=~/.vim/undodir
@@ -57,8 +62,12 @@ set cpoptions+=x  " stay at seach item when <esc>
 
 set noerrorbells  " remove bells (i think this is default in neovim)
 set visualbell
+set t_vb=
 set relativenumber
 set viminfo='20,<1000  " allow copying of more than 50 lines to other applications
+
+set textwidth=79
+au BufRead,BufNewFile *.md setlocal textwidth=79
 
 " easy split movement
 nnoremap <C-h> <C-w>h
@@ -67,26 +76,6 @@ nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
 
 nnoremap <C-z> <Esc>  " disable terminal ctrl-z
-
-" map S to replace current word with pasteboard
-nnoremap S diw"0P
-nnoremap cc "_cc
-nnoremap q: :q<CR>
-nnoremap w: :w<CR>
-
-" ncm2 settings
-autocmd BufEnter * call ncm2#enable_for_buffer()
-set completeopt=menuone,noselect,noinsert
-" make it FAST
-let ncm2#popup_delay = 5
-let ncm2#complete_length = [[1,1]]
-let g:ncm2#matcher = 'substrfuzzy'
-
-set pumheight=5
-
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <silent> <expr> <CR> (pumvisible() && empty(v:completed_item)) ?  "\<c-y>\<cr>" : "\<CR>"
 
 " With a map leader it's possible to do extra key combinations
 " like <leader>w saves the current file
@@ -125,23 +114,57 @@ let g:jedi#enable_speed_debugging=0
 nnoremap <C-S> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 
-" THEME seoul256 config
-" seoul256 (dark):
-"   Range:   233 (darkest) ~ 239 (lightest)
-"   Default: 237
-"let g:seoul256_background = 236
-"colo seoul256
+" FOR TMUX TRUE COLORS
+" https://github.com/tmux/tmux/issues/1246
+if exists('+termguicolors')
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+  set termguicolors
+endif
 
 "GIT BRANCH
+"let g:lightline.colorscheme=''
 let g:lightline = {
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
       \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
       \ },
       \ 'component_function': {
-      \   'gitbranch': 'gitbranch#name'
+      \   'gitbranch': 'gitbranch#name',
       \ },
       \ }
-" theme gruvbox
-let g:gruvbox_contrast_dark = "medium"
-colo gruvbox
+let g:lightline.colorscheme='onehalfdark'
+set statusline^=%{coc#status()}
+" Theme set
+set background=dark
+"colorscheme candid
+"colorscheme snazzy
+colorscheme onehalfdark
+
+set completeopt+=menuone   " show the popup menu even when there is only 1 match
+set completeopt+=noinsert  " don't insert any text until user chooses a match
+set completeopt-=longest   " don't insert the longest common text
+set completeopt-=preview
+
+" CONFIG COC.NVIM
+" Tab
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion.
+inoremap <silent><expr> <c-space> coc#refresh()
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+
+" Remap keys for gotos
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
