@@ -7,8 +7,11 @@ call plug#begin('~/.vim/plugged')
 Plug 'itchyny/lightline.vim' " statusline
 Plug 'itchyny/vim-gitbranch' " branch name for status line
 Plug 'raimondi/delimitmate'
+Plug 'bling/vim-bufferline'
+Plug 'terryma/vim-multiple-cursors'
 Plug 'flrnprz/candid.vim' " theme candid
 Plug 'connorholyday/vim-snazzy'
+Plug 'morhetz/gruvbox'
 Plug 'sonph/onehalf', {'rtp': 'vim/'}
 
 " Use release branch (Recommend)
@@ -77,6 +80,10 @@ nnoremap <C-l> <C-w>l
 
 nnoremap <C-z> <Esc>  " disable terminal ctrl-z
 
+" switch buffers
+nnoremap <C-N> :bnext<CR>
+nnoremap <C-P> :bprev<CR>
+
 " With a map leader it's possible to do extra key combinations
 " like <leader>w saves the current file
 let mapleader = " " " Leader is the space key
@@ -122,6 +129,10 @@ if exists('+termguicolors')
   set termguicolors
 endif
 
+if (has("termguicolors"))
+  set termguicolors
+endif
+
 "GIT BRANCH
 "let g:lightline.colorscheme=''
 let g:lightline = {
@@ -133,18 +144,22 @@ let g:lightline = {
       \   'gitbranch': 'gitbranch#name',
       \ },
       \ }
-let g:lightline.colorscheme='onehalfdark'
+let g:lightline.colorscheme='gruvbox'
 set statusline^=%{coc#status()}
 " Theme set
 set background=dark
 "colorscheme candid
 "colorscheme snazzy
-colorscheme onehalfdark
+"colorscheme onehalfdark
+let g:gruvbox_italicize_strings=1
+let g:gruvbox_contrast_dark='medium'
+let g:gruvbox_italic=1
+colorscheme gruvbox
 
 set completeopt+=menuone   " show the popup menu even when there is only 1 match
 set completeopt+=noinsert  " don't insert any text until user chooses a match
 set completeopt-=longest   " don't insert the longest common text
-set completeopt-=preview
+set completeopt+=preview
 
 " CONFIG COC.NVIM
 " Tab
@@ -168,3 +183,20 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+
+let g:bufferline_active_buffer_left = '|'
+let g:bufferline_active_buffer_right = '|'
+let g:bufferline_modified = '*'
+
+" mapping multi selection
+let g:multi_cursor_use_default_mapping=0
+
+" Default mapping
+let g:multi_cursor_start_word_key      = '<C-d>'
+let g:multi_cursor_select_all_word_key = '<A-d>'
+let g:multi_cursor_start_key           = 'g<C-d>'
+let g:multi_cursor_select_all_key      = 'g<A-d>'
+let g:multi_cursor_next_key            = '<C-d>'
+let g:multi_cursor_prev_key            = '<C-f>'
+let g:multi_cursor_skip_key            = '<C-x>'
+let g:multi_cursor_quit_key            = '<Esc>'
